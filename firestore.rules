@@ -53,6 +53,7 @@ service cloud.firestore {
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.ownerName is string
         && request.resource.data.ownerName.size() <= 100
+        && request.resource.data.ownerName == userDoc().data.name
         && request.resource.data.itemId is string
         && exists(/databases/$(database)/documents/items/$(request.resource.data.itemId))
         && request.resource.data.itemName == get(/databases/$(database)/documents/items/$(request.resource.data.itemId)).data.name
@@ -82,7 +83,6 @@ service cloud.firestore {
         && (request.resource.data.ownerUid == ''
           ? request.resource.data.ownerName == '' && request.resource.data.code == ''
           : exists(/databases/$(database)/documents/users/$(request.resource.data.ownerUid))
-            && request.resource.data.ownerName == get(/databases/$(database)/documents/users/$(request.resource.data.ownerUid)).data.name
             && request.resource.data.code.size() >= 6)
         && request.resource.data.status == 'pending'
         && request.resource.data.verifiedBy == ''
