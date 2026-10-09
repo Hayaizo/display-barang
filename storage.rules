@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function userRole() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function canEditItems() {
+      return signedIn() && userRole() in ['admin', 'editor'];
+    }
+    match /items/{ownerUid}/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if canEditItems()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if canEditItems();
+    }
+  }
+}
