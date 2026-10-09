@@ -6,11 +6,14 @@ service firebase.storage {
       return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
     }
     function canManage() { return signedIn() && userRole() in ['admin', 'moderator']; }
+
     match /items/{ownerUid}/{fileName} {
       allow read: if true;
+      // MIME metadata is not a full image-content inspection, but an allowlist is safer than image/*.
       allow create, update: if canManage()
+        && request.resource.size > 0
         && request.resource.size <= 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp'];
       allow delete: if canManage();
     }
   }
