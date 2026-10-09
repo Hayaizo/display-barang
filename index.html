@@ -65,7 +65,7 @@ async function onUser(u){stop();user=u;profile=null;shares=[];orders=[];members=
 try{let snap=await getDoc(doc(db,"users",u.uid));if(!snap.exists()){await setDoc(doc(db,"users",u.uid),{uid:u.uid,email:u.email||"",name:u.displayName||u.email?.split("@")[0]||"Member",role:"member",createdAt:serverTimestamp()});snap=await getDoc(doc(db,"users",u.uid))}profile={...snap.data(),uid:u.uid};$("authView").classList.add("hidden");$("appView").classList.remove("hidden");$("userChip").textContent=(profile.name||u.email)+" · "+role().toUpperCase();$("userChip").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("loginBtn").classList.add("hidden");$("dashboardBtn").classList.remove("hidden");
 $("ordersTab").classList.toggle("hidden",!canManage());$("manageTab").classList.toggle("hidden",!canManage());$("membersTab").classList.toggle("hidden",!isAdmin());
 unsubs.push(subscribe("items",v=>{items=v;renderCatalog();renderManage();fillOrderItems()},true));
-const sharesQuery=canManage()?query(collection(db,"shares"),orderBy("updatedAt","desc")):query(collection(db,"shares"),where("ownerUid","==",u.uid),orderBy("updatedAt","desc"));unsubs.push(onSnapshot(sharesQuery,s=>{shares=s.docs.map(d=>({id:d.id,...d.data()}));renderShares();renderMembers()},e=>toast(err(e))));
+const sharesQuery=canManage()?query(collection(db,"shares"),orderBy("updatedAt","desc")):query(collection(db,"shares"),where("ownerUid","==",u.uid));unsubs.push(onSnapshot(sharesQuery,s=>{shares=s.docs.map(d=>({id:d.id,...d.data()}));renderShares();renderMembers()},e=>toast(err(e))));
 if(canManage())unsubs.push(subscribe("orders",v=>{orders=v;renderOrders();renderMembers()},true));
 if(isAdmin())unsubs.push(subscribe("users",v=>{members=v;renderMembers()},false));
 showCatalog();
