@@ -1,10 +1,10 @@
 // Salin konfigurasi dari Firebase Console > Project settings > Your apps.
 // Ini konfigurasi client publik; keamanan tetap wajib menggunakan Firestore/Storage Rules.
 export const firebaseConfig = {
-  apiKey: "ISI_API_KEY",
-  authDomain: "ISI_PROJECT_ID.firebaseapp.com",
-  projectId: "ISI_PROJECT_ID",
-  storageBucket: "ISI_STORAGE_BUCKET",
-  messagingSenderId: "ISI_MESSAGING_SENDER_ID",
-  appId: "ISI_APP_ID"
+  apiKey: "AIzaSyBoXw3XayLwj4h8P2xh_mW22azbFy3m9WU",
+  authDomain: "niss-854cb.firebaseapp.com",
+  projectId: "niss-854cb",
+  storageBucket: "niss-854cb.firebasestorage.app",
+  messagingSenderId: "487976415907",
+  appId: "1:487976415907:web:c7443650a25104ea980516"
 };
