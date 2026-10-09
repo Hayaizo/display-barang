@@ -35,7 +35,7 @@ service cloud.firestore {
         && request.resource.data.uid == uid
         && request.resource.data.role == 'member'
         && request.resource.data.email == request.auth.token.email;
-      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || (role() == "moderator" && resource.data.role == "member"));
       allow update: if (
         // Admin may change a member's role or name, but not identity fields.
         isAdmin()
