@@ -36,11 +36,23 @@ service cloud.firestore {
         && request.resource.data.role == 'member'
         && request.resource.data.email == request.auth.token.email;
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
-      allow update: if isAdmin()
+      allow update: if (
+        // Admin may change a member's role or name, but not identity fields.
+        isAdmin()
         && request.resource.data.uid == resource.data.uid
         && request.resource.data.email == resource.data.email
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'name'])
-        && request.resource.data.role in ['member', 'moderator', 'admin'];
+        && request.resource.data.role in ['member', 'moderator', 'admin']
+      ) || (
+        // A user may finish their own profile setup without changing role or identity.
+        // This also avoids a registration/onAuthStateChanged race during first sign-in.
+        signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'createdAt'])
+      );
       allow delete: if isAdmin() && request.auth.uid != uid;
     }
 
