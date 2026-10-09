@@ -1,63 +1,37 @@
 # Display Barang
 
-Aplikasi katalog barang berbasis HTML + Firebase SDK modular, siap dihubungkan ke Vercel dan Firebase. Tidak memerlukan build step atau package manager.
+Katalog publik sederhana berbasis HTML + Firebase SDK modular, siap untuk hosting statis di Vercel. Tidak perlu build step.
 
 ## Fitur
-- Email/password registration dan login via Firebase Authentication
-- Role pengguna: `viewer`, `editor`, `admin`
-- CRUD katalog barang (nama, kategori, harga, deskripsi)
-- Upload foto ke Firebase Storage
-- Realtime catalog dari Cloud Firestore
-- Search, filter kategori, export JSON
-- UI responsif untuk HP dan desktop
+- Katalog publik: pengunjung tidak perlu login.
+- Tombol Beli membuka WhatsApp moderator dengan template pesan.
+- Member Share membuat materi promosi berisi foto, deskripsi, harga, dan kode posting unik.
+- Moderator/admin mengelola barang dan besaran insentif.
+- Moderator/admin mencatat pesanan dari WhatsApp, mengidentifikasi kode posting, memverifikasi pesanan, dan mencatat pembayaran insentif.
+- Admin mengelola peran member, moderator, dan admin.
+- Foto disimpan di Firebase Storage; katalog, member, materi share, dan pesanan di Firestore.
 
-## 1. Siapkan Firebase
-1. Buat project di https://console.firebase.google.com/
-2. Tambahkan Web App di Project settings > General > Your apps.
-3. Salin konfigurasi web app ke `firebase-config.js`, ganti seluruh nilai `ISI_...`.
-4. Authentication > Sign-in method > aktifkan **Email/Password**.
-5. Authentication > Settings > Authorized domains: tambahkan domain Vercel kamu.
-6. Firestore Database > Create database.
-7. Storage > Get started.
-8. Tempel isi `firestore.rules` ke Firestore Database > Rules lalu Publish.
-9. Tempel isi `storage.rules` ke Storage > Rules lalu Publish.
+## Setup Firebase
+1. Buat project Firebase.
+2. Aktifkan Authentication > Email/Password.
+3. Buat Firestore Database dan aktifkan Storage.
+4. Isi konfigurasi web app pada \`firebase-config.js\`.
+5. Salin isi \`firestore.rules\` ke Firestore Rules lalu Publish.
+6. Salin isi \`storage.rules\` ke Storage Rules lalu Publish.
+7. Pada Firebase Authentication > Settings > Authorized domains, tambahkan domain Vercel.
+8. Deploy repo ini ke Vercel sebagai static site (Framework Preset: Other, Build Command kosong, Output Directory \`.\`).
+9. Isi konstanta \`MODERATOR_WA\` pada \`index.html\` dengan nomor WhatsApp moderator format internasional tanpa tanda +, misalnya \`6281234567890\`.
+10. Daftarkan akun admin pertama seperti biasa. Di Firestore, buka dokumen \`users/{UID}\` untuk akun tersebut lalu ubah \`role\` dari \`member\` menjadi \`admin\`. UID ada di Firebase Authentication.
+11. Login kembali. Admin bisa mengubah peran member menjadi \`moderator\` atau \`admin\`.
 
-> Jangan biarkan Firestore atau Storage dalam mode test/public. Gunakan rules yang disediakan dan uji melalui akun dengan role berbeda.
+## Cara kerja
+- Pengunjung buka halaman utama dan melihat barang tanpa login.
+- Beli membuka chat WhatsApp moderator. Pesanan dicatat moderator dari dashboard.
+- Member login, pilih Share pada barang, lalu salin materi dan kode posting unik untuk dibagikan ke grup.
+- Ketika pembeli menghubungi moderator, moderator memasukkan kode pada form Catat Pesanan. Sistem mencari pemilik kode dan menghubungkan pesanan ke member tersebut.
+- Kode posting membantu pencatatan, tetapi tidak membuktikan transaksi selesai. Moderator harus memeriksa bukti percakapan dan status pesanan sebelum memverifikasi insentif.
 
-## 2. Deploy ke Vercel
-1. Impor repository GitHub `Hayaizo/display-barang` di https://vercel.com/new.
-2. Framework preset: **Other**.
-3. Build command: kosongkan / None. Output directory: `.` (root).
-4. Deploy. Setiap commit baru ke branch yang terhubung akan memicu deployment.
-5. Tambahkan domain Vercel ke Firebase Authentication > Authorized domains.
-
-## 3. Jadikan akun pertama sebagai admin
-Demi keamanan, pendaftaran publik selalu menghasilkan role `viewer`. Setelah mendaftar dan login sekali:
-1. Buka Firebase Console > Firestore Database > Data.
-2. Buka koleksi `users`, pilih dokumen dengan ID UID akunmu (bisa dilihat di Authentication > Users).
-3. Ubah field `role` dari `viewer` menjadi string `admin`.
-4. Refresh aplikasi. Akun admin dapat mengelola barang dan mengubah role akun lain.
-
-Jangan pernah memberikan role admin melalui form pendaftaran publik. Jika semua admin kehilangan akses, ubah role lewat Firebase Console sebagai pemilik project.
-
-## 4. Role
-- `viewer`: membaca katalog
-- `editor`: membaca, menambah, mengedit, menghapus barang
-- `admin`: semua hak editor + mengubah role dan mengelola profil pengguna
-
-Pengguna bisa membuat akun sendiri. Admin mengubah role dari tab **Pengguna**. Penghapusan dokumen profil tidak menghapus akun Authentication; untuk menonaktifkan atau menghapus akun secara menyeluruh gunakan Firebase Console atau backend tepercaya dengan Firebase Admin SDK.
-
-## 5. Catatan keamanan
-- Firebase web config adalah konfigurasi client, bukan service-account secret. Jangan pernah commit service account JSON atau private key.
-- Security Rules adalah lapisan keamanan sebenarnya; menyembunyikan tombol di UI bukan pengamanan.
-- Aplikasi ini belum memakai backend Admin SDK, verifikasi email wajib, reset password khusus, atau audit log.
-- Atur Firebase App Check dan batasan API key sesuai kebutuhan sebelum penggunaan produksi.
-- Rules Storage menggunakan akses baca dokumen Firestore untuk mengecek role; pastikan Firestore dan Storage di project yang sama dan rules telah dipublikasikan.
-- Untuk data inventaris sensitif, batasi pendaftaran akun dan akses baca sesuai kebutuhan bisnis.
-
-## File
-- `index.html`: seluruh UI dan logika client
-- `firebase-config.js`: konfigurasi Firebase web app
-- `firestore.rules`: aturan akses data
-- `storage.rules`: aturan akses foto
-- `vercel.json`: header keamanan dasar Vercel
+## Catatan
+- Insentif hanyalah catatan internal, bukan transfer otomatis. Moderator/admin menandai status pembayaran setelah pembayaran benar-benar dilakukan.
+- Kode posting dapat diteruskan atau disalin orang lain; gunakan bukti posting/chat jika terjadi sengketa.
+- Konfigurasi Firebase web berisi identifier client publik; keamanan tetap harus ditegakkan lewat Firebase Security Rules.
