@@ -4,8 +4,8 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
     function role() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? userDoc().data.role : 'guest'; }
-    function isAdmin() { return role() == 'admin'; }
-    function canManage() { return role() in ['admin', 'moderator']; }
+    function isAdmin() { return role() in ['admin', 'ADMIN', 'Admin']; }
+    function canManage() { return role() in ['admin', 'moderator', 'ADMIN', 'MODERATOR', 'Admin', 'Moderator']; }
 
     match /items/{itemId} {
       allow read: if true;
